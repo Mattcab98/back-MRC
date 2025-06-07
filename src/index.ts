@@ -15,5 +15,5 @@ app.use('/api/category/products', productRouter);
 
 app.listen(PORT, () => {
     console.log(`Servidor en escucha en el puerto http://localhost:${PORT} ✅`);
-    connectMongodb;
+    connectMongodb();
 });
