@@ -11,7 +11,7 @@ const ProductSchema: Schema<ProductInterface> = new Schema<ProductInterface>({
 
     description: { type: String, required: true, set: (s: string) => s.toLocaleLowerCase() },
 
-    stock: { type: Number, required: true, set: (n: number) => Math.round(n) },
+    stock: { type: Number, required: true, default: 0, set: (n: number) => Math.round(n) },
 
     category: {
         type: String,
