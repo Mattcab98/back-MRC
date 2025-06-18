@@ -1,11 +1,12 @@
 import { Request, Response } from "express";
 import { Product } from "../models/productsModels";
-import { ProductInterface } from "../interfaces/productsInterfaces";
+
+import { productSchemaValidator } from "../validators/productValidator";
 
 
 
 // Data recovery method (GET) :
-const getAllProducts = async (req: Request, res: Response) => {
+const getAllProducts = async (req: Request, res: Response): Promise<any> => {
     try {
         const products = await Product.find();
         res.json({
@@ -24,7 +25,7 @@ const getAllProducts = async (req: Request, res: Response) => {
 };
 
 // data recovery method (GET - ID) :
-const getProductsId = async (req: Request, res: Response) => {
+const getProductsId = async (req: Request, res: Response): Promise<any> => {
 
 
     try {
@@ -57,28 +58,28 @@ const getProductsId = async (req: Request, res: Response) => {
 }
 
 // Method to add a new product (POST) : 
-const postNewProduct = async (req: Request, res: Response) => {
+const postNewProduct = async (req: Request, res: Response): Promise<any> => {
 
     const body = req.body;
-    const { productName, price, description, stock, category } = body;
+    // const { productName, price, description, stock, category } = body;
 
-    if (!productName || !price || !category) {
-        res.status(400).json({
+    const validator = productSchemaValidator.safeParse(body);
+    // console.log(validator.error?.issues.map(e => e.message));
+
+    // const newProduct = new Product(body);
+    
+    if (!validator.success) {
+        const err = validator.error?.issues.map(e => e.message);
+
+        return res.status(400).json({
             sucess: false,
-            message: "invalid data"
+            message: err
         });
     }
-
+ 
     try {
 
-        const newProductData: ProductInterface = { productName, price, category, description, stock }
-
-        if (description !== undefined || stock !== undefined) {
-            newProductData.description = description;
-            newProductData.stock = stock;
-        }
-
-        const newProduct = new Product(newProductData);
+        const newProduct = new Product(validator.data);
         await newProduct.save();
 
         res.status(201).json({
@@ -99,12 +100,22 @@ const postNewProduct = async (req: Request, res: Response) => {
 }
 
 // Method to update a product (UPDATE) : 
-const updateProductId = async (req: Request, res: Response) => {
+const updateProductId = async (req: Request, res: Response): Promise<any> => {
     const id = req.params.id;
     const body = req.body;
 
+    const validator = productSchemaValidator.partial().safeParse(body);
+
+    if (!validator.success) {
+        const err = validator.error?.issues.map((e => e.message));
+        return res.status(400).json({
+            success: false,
+            message: `Error de validacion en el cuerpo de la petición, ${err}`
+        })
+    } 
+
     try {
-        const patchProduct = await Product.findByIdAndUpdate(id, body, {
+        const patchProduct = await Product.findByIdAndUpdate(id, validator.data, {
             new: true,
             runValidators: true,
         });
@@ -133,7 +144,7 @@ const updateProductId = async (req: Request, res: Response) => {
 }
 
 // Method to delete a product (DELETE) : 
-const deleteProductId = async (req: Request, res: Response) => {
+const deleteProductId = async (req: Request, res: Response): Promise<any> => {
     const id = req.params.id;
 
     try {
@@ -148,7 +159,7 @@ const deleteProductId = async (req: Request, res: Response) => {
             res.json({
                 success: true,
                 data: deletedProduct,
-                messages: `${deletedProduct} ha sido eliminado con exito`
+                messages: `${deletedProduct.productName} ha sido eliminado con exito`
             });
         };
 
