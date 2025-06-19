@@ -6,9 +6,10 @@ import { categoryRouter } from './router/categoryRouter';
 import { productRouter } from "./router/productsRouter";
 
 // process.loadEnvFile();
-dotenv.config()
 
-process.env.DEV_MODE === "production" ? dotenv.config() : process.loadEnvFile();
+if (process.env.DEV_MODE !== "production") {
+    dotenv.config()
+}
 
 const PORT = process.env.PORT || 1905;
 const DEV_MODE = process.env.DEV_MODE;
