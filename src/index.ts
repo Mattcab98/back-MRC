@@ -1,13 +1,16 @@
 import express from "express";
 import cors from "cors";
+import dotenv from "dotenv";
 import { connectMongodb } from "./config/connectMongodb";
-import { categoryRouter } from './router/categoryRouter'
+import { categoryRouter } from './router/categoryRouter';
 import { productRouter } from "./router/productsRouter";
 
 process.loadEnvFile();
 
+process.env.DEV_MODE === "production" ? dotenv.config() : process.loadEnvFile();
+
 const PORT = process.env.PORT || 1905;
-const DEV_MODE = process.env.DEV_MODE || "development"  
+const DEV_MODE = process.env.DEV_MODE;
 
 const app = express();
 app.use(express.json());
